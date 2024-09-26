@@ -6,6 +6,7 @@ export { Connection, Icon } from '~/react/common/connections';
 export { Loading } from '~/react/common/loading';
 
 export type {
+  FormCtx,
   FormFieldErrorProps,
   FormErrorProps,
   FormErrorRenderProps,

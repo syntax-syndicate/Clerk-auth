@@ -6,14 +6,14 @@ import React, { useEffect } from 'react';
 import { createActor } from 'xstate';
 
 import { ROUTING, SIGN_IN_DEFAULT_BASE_PATH, SIGN_UP_DEFAULT_BASE_PATH } from '~/internals/constants';
-import { FormStoreProvider, useFormStore } from '~/internals/machines/form/form.context';
+import { FormMachine } from '~/internals/machines/form';
 import type { SignInRouterInitEvent } from '~/internals/machines/sign-in';
 import { SignInRouterMachine } from '~/internals/machines/sign-in';
 import { inspect } from '~/internals/utils/inspector';
 import { Router, useVirtualRouter } from '~/react/router';
 import { SignInRouterCtx } from '~/react/sign-in/context';
 
-import { Form } from '../common/form';
+import { Form, FormCtx } from '../common/form';
 import { usePathnameWithoutCatchAll } from '../utils/path-inference/next';
 
 type SignInFlowProviderProps = {
@@ -29,10 +29,13 @@ type SignInFlowProviderProps = {
 const actor = createActor(SignInRouterMachine, { inspect });
 actor.start();
 
+const formActor = createActor(FormMachine, { inspect });
+formActor.start();
+
 function SignInFlowProvider({ children, exampleMode, fallback, isRootPath }: SignInFlowProviderProps) {
   const clerk = useClerk();
   const router = useClerkRouter();
-  const formRef = useFormStore();
+  // const formRef = useFormStore();
   const isReady = useSelector(actor, state => state.value !== 'Idle');
 
   useEffect(() => {
@@ -45,7 +48,7 @@ function SignInFlowProvider({ children, exampleMode, fallback, isRootPath }: Sig
         type: 'INIT',
         clerk,
         exampleMode,
-        formRef,
+        formRef: formActor.ref,
         router,
         signUpPath: SIGN_UP_DEFAULT_BASE_PATH,
       };
@@ -65,21 +68,13 @@ function SignInFlowProvider({ children, exampleMode, fallback, isRootPath }: Sig
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(clerk), exampleMode, !!router, clerk.loaded]);
 
-  useEffect(() => {
-    // Ensure that the latest instantiated formRef is attached to the router
-    if (formRef.id && actor.getSnapshot().can({ type: 'RESET.STEP' })) {
-      actor.send({
-        type: 'FORM.ATTACH',
-        formRef,
-      });
-    }
-  }, [formRef.id]);
-
   return (
-    <SignInRouterCtx.Provider actorRef={actor}>
-      {isRootPath && !isReady && fallback ? <Form>{fallback}</Form> : null}
-      {clerk.loaded && isReady ? children : null}
-    </SignInRouterCtx.Provider>
+    <FormCtx.Provider actorRef={formActor}>
+      <SignInRouterCtx.Provider actorRef={actor}>
+        {isRootPath && !isReady && fallback ? <Form>{fallback}</Form> : null}
+        {clerk.loaded && isReady ? children : null}
+      </SignInRouterCtx.Provider>
+    </FormCtx.Provider>
   );
 }
 
@@ -140,15 +135,13 @@ export function SignInRoot({
       basePath={path}
       router={router}
     >
-      <FormStoreProvider>
-        <SignInFlowProvider
-          exampleMode={exampleMode}
-          fallback={fallback}
-          isRootPath={isRootPath}
-        >
-          {children}
-        </SignInFlowProvider>
-      </FormStoreProvider>
+      <SignInFlowProvider
+        exampleMode={exampleMode}
+        fallback={fallback}
+        isRootPath={isRootPath}
+      >
+        {children}
+      </SignInFlowProvider>
     </Router>
   );
 }

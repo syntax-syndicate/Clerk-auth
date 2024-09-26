@@ -6,14 +6,14 @@ import { useEffect } from 'react';
 import { createActor } from 'xstate';
 
 import { ROUTING, SIGN_IN_DEFAULT_BASE_PATH, SIGN_UP_DEFAULT_BASE_PATH } from '~/internals/constants';
-import { FormStoreProvider, useFormStore } from '~/internals/machines/form/form.context';
+import { FormStoreProvider } from '~/internals/machines/form/form.context';
 import type { SignUpRouterInitEvent } from '~/internals/machines/sign-up';
 import { SignUpRouterMachine } from '~/internals/machines/sign-up';
 import { inspect } from '~/internals/utils/inspector';
 import { Router, useClerkRouter, useVirtualRouter } from '~/react/router';
 import { SignUpRouterCtx } from '~/react/sign-up/context';
 
-import { Form } from '../common/form';
+import { Form, FormCtx } from '../common/form';
 import { usePathnameWithoutCatchAll } from '../utils/path-inference/next';
 
 type SignUpFlowProviderProps = {
@@ -32,7 +32,7 @@ actor.start();
 function SignUpFlowProvider({ children, exampleMode, fallback, isRootPath }: SignUpFlowProviderProps) {
   const clerk = useClerk();
   const router = useClerkRouter();
-  const formRef = useFormStore();
+  const formRef = FormCtx.useActorRef();
   const isReady = useSelector(actor, state => state.value !== 'Idle');
 
   useEffect(() => {

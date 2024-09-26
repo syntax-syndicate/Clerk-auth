@@ -1,5 +1,7 @@
 export type { FormControlProps } from '@radix-ui/react-form';
 
+export { FormCtx } from './context';
+
 export { Field } from './field';
 export { FieldError } from './field-error';
 export { FieldState } from './field-state';

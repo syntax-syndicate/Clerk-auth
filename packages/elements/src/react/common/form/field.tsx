@@ -3,8 +3,7 @@ import type { FormFieldProps as RadixFormFieldProps } from '@radix-ui/react-form
 import { Field as RadixField, ValidityState as RadixValidityState } from '@radix-ui/react-form';
 import * as React from 'react';
 
-import { useFormStore } from '~/internals/machines/form/form.context';
-
+import { FormCtx } from './context';
 import { FieldContext, useField, useFieldState, ValidityStateContext } from './hooks';
 import type { ClerkFieldId, FieldStates } from './types';
 import { enrichFieldState } from './utils';
@@ -41,7 +40,7 @@ export type FormFieldProps = Omit<RadixFormFieldProps, 'children'> & {
  * </Clerk.Field>
  */
 export const Field = React.forwardRef<FormFieldElement, FormFieldProps>(({ alwaysShow, ...rest }, forwardedRef) => {
-  const formRef = useFormStore();
+  const formRef = FormCtx.useActorRef();
   const formCtx = formRef.getSnapshot().context;
   // A field is marked as hidden if it's optional OR if it's a filled-out required field
   const isHiddenField = formCtx.progressive && Boolean(formCtx.hidden?.has(rest.name));

@@ -408,21 +408,6 @@ export const SignInRouterMachine = setup({
         },
       })),
     },
-    'FORM.ATTACH': {
-      description: 'Attach/re-attach the form to the router.',
-      actions: enqueueActions(({ context, enqueue, event }) => {
-        if (event.formRef.id === context.formRef.id) {
-          return;
-        }
-
-        enqueue.assign({
-          formRef: event.formRef,
-        });
-
-        // Reset the current step, to reset the form reference.
-        enqueue.raise({ type: 'RESET.STEP' });
-      }),
-    },
     'NAVIGATE.PREVIOUS': '.Hist',
     'NAVIGATE.START': '.Start',
     LOADING: {
@@ -551,11 +536,6 @@ export const SignInRouterMachine = setup({
             target: 'ResetPassword',
           },
         ],
-        'RESET.STEP': {
-          guard: 'isntComplete',
-          target: 'Start',
-          reenter: true,
-        },
       },
       initial: 'Pending',
       states: {
@@ -704,11 +684,6 @@ export const SignInRouterMachine = setup({
             target: 'ResetPassword',
           },
         ],
-        'RESET.STEP': {
-          guard: 'isntComplete',
-          target: 'FirstFactor',
-          reenter: true,
-        },
         'STRATEGY.REGISTER': {
           actions: assign({
             registeredStrategies: ({ context, event }) => context.registeredStrategies.add(event.factor),
@@ -937,11 +912,6 @@ export const SignInRouterMachine = setup({
             target: 'ResetPassword',
           },
         ],
-        'RESET.STEP': {
-          guard: 'isntComplete',
-          target: 'SecondFactor',
-          reenter: true,
-        },
         'STRATEGY.REGISTER': {
           actions: assign({
             registeredStrategies: ({ context, event }) => context.registeredStrategies.add(event.factor),
@@ -1115,11 +1085,6 @@ export const SignInRouterMachine = setup({
       tags: ['step:reset-password'],
       exit: 'clearFormErrors',
       on: {
-        'RESET.STEP': {
-          guard: 'isntComplete',
-          target: 'ResetPassword',
-          reenter: true,
-        },
         NEXT: [
           {
             guard: 'isComplete',

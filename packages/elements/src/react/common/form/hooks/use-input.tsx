@@ -2,10 +2,10 @@ import { Control as RadixControl, type FormControlProps } from '@radix-ui/react-
 import * as React from 'react';
 
 import { ClerkElementsFieldError } from '~/internals/errors';
-import { fieldValueSelector, useFormSelector, useFormStore } from '~/internals/machines/form';
+import { fieldValueSelector } from '~/internals/machines/form';
 import { usePassword } from '~/react/hooks/use-password.hook';
 
-import type { FormInputProps } from '../index';
+import { FormCtx, type FormInputProps } from '../index';
 import { OTP_LENGTH_DEFAULT, OTPInput, type OTPInputProps } from '../otp';
 import { determineInputTypeFromName, enrichFieldState } from '../utils';
 import { useFieldContext } from './use-field-context';
@@ -39,7 +39,7 @@ export function useInput({
     throw new Error('Clerk: <Input /> must be wrapped in a <Field> component or have a name prop.');
   }
 
-  const ref = useFormStore();
+  const ref = FormCtx.useActorRef();
   const [hasPassedValiation, setHasPassedValidation] = React.useState(false);
 
   const { validatePassword } = usePassword({
@@ -86,7 +86,7 @@ export function useInput({
     },
   });
 
-  const value = useFormSelector(fieldValueSelector(name));
+  const value = FormCtx.useSelector(fieldValueSelector(name));
   const prevValue = usePrevious(value);
   const hasValue = Boolean(value);
   const type = inputType ?? determineInputTypeFromName(rawName);

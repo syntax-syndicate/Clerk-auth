@@ -107,18 +107,6 @@ export const SignInRouterMachine = setup({
       assertActorEventDone<SignInResource>(event);
       return { type: 'NEXT', resource: event?.output } as SignInRouterNextEvent;
     }),
-    // goToNextStep: enqueueActions(({ context, enqueue, event }) => {
-    //   // {
-    //   //   type: 'setResource',
-    //   //   params: ({ event }) => ({ resource: event.output }),
-    //   // },
-    //   //
-    //   assertActorEventDone(event);
-
-    //   enqueue.assign({ resource: event?.output || context.clerk?.client.signIn });
-    //   enqueue.raise(({ event }) => ({ type: 'NEXT', resource: event?.output || event?.data }));
-    // }),
-
     navigateInternal: ({ context }, { path, force = false }: { path: string; force?: boolean }) => {
       if (!context.router) {
         return;
@@ -192,12 +180,6 @@ export const SignInRouterMachine = setup({
       console.log('Running setActive');
       void context.clerk.setActive({ session, beforeEmit });
     },
-
-    // setResource: enqueueActions(({ context, enqueue }) => {
-    //   const resource = context.clerk.client.signIn;
-    //   enqueue.send({ type: 'RESOURCE.SET', resource });
-    // }),
-    //
     setResource: assign({
       resource: (_, { resource }: { resource?: SignInResource }) => resource,
     }),

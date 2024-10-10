@@ -40,6 +40,7 @@ export type SignUpStepProps =
  *  <SignUp.Step name='start' />
  *  <SignUp.Step name='continue' />
  *  <SignUp.Step name='verifications' />
+ *  <SignUp.Step name='restricted' />
  * </SignUp.Root>
  */
 export function SignUpStep(props: SignUpStepProps) {

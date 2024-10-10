@@ -44,14 +44,10 @@ import type {
   SignUpRouterEvents,
   SignUpRouterNextEvent,
   SignUpRouterSchema,
-  // SignUpVerificationDelays,
   SignUpVerificationEmailLinkFailedEvent,
   SignUpVerificationEvents,
 } from './router.types';
-import {
-  SignUpRouterDelays,
-  // SignUpVerificationEvents,
-} from './router.types';
+import { SignUpRouterDelays } from './router.types';
 
 export const SignUpRouterMachineId = 'SignUpRouter';
 export type TSignUpRouterMachine = typeof SignUpRouterMachine;
@@ -307,18 +303,29 @@ export const SignUpRouterMachine = setup({
     isLoggedInAndSingleSession: and(['isLoggedIn', 'isSingleSessionMode', not('isExampleMode')]),
     isResendable: ({ context }) => context.resendable || context.resendableAfter === 0,
     isStatusAbandoned: needsStatus('abandoned'),
-    isStatusComplete: ({ context, event }) => {
-      const resource = (event as SignUpRouterNextEvent)?.resource;
-      const signUp = context.clerk?.client?.signUp;
+    isComplete: ({ context, event }) => {
+      // TODO: Clean Up - Remove Event Resource
+      const evtResource = (event as SignUpRouterNextEvent)?.resource;
+      const resource = context.resource;
+      const signUp = context.clerk.client.signUp;
 
       return (
         (resource?.status === 'complete' && Boolean(resource?.createdSessionId)) ||
-        (signUp?.status === 'complete' && Boolean(signUp?.createdSessionId))
+        (evtResource?.status === 'complete' && Boolean(evtResource?.createdSessionId)) ||
+        (signUp.status === 'complete' && Boolean(signUp.createdSessionId))
       );
     },
     isStatusMissingRequirements: needsStatus('missing_requirements'),
+    isFieldUnverified: ({ context, event }, { field }: { field: SignUpVerifiableField }) => {
+      let resource = context.resource;
 
-    isLoggedIn: or(['isStatusComplete', ({ context }) => Boolean(context.clerk.user)]),
+      if (event?.type === 'NEXT' && event.resource) {
+        resource = event.resource;
+      }
+
+      return resource.unverifiedFields.includes(field);
+    },
+    isLoggedIn: or(['isComplete', ({ context }) => Boolean(context.clerk.user)]),
     isSingleSessionMode: ({ context }) => Boolean(context.clerk?.__unstable__environment?.authConfig.singleSessionMode),
     isRestricted: ({ context }) =>
       context.clerk?.__unstable__environment?.userSettings.signUp.mode === SIGN_UP_MODES.RESTRICTED,
@@ -509,7 +516,7 @@ export const SignUpRouterMachine = setup({
         },
         NEXT: [
           {
-            guard: 'isStatusComplete',
+            guard: 'isComplete',
             actions: ['setActive', 'delayedReset'],
           },
           {
@@ -592,7 +599,7 @@ export const SignUpRouterMachine = setup({
               return { ...defaultParams, params };
             },
             onDone: {
-              actions: ['setFormDisabledTicketFields', 'goToNextStep'],
+              actions: ['setResource', 'setFormDisabledTicketFields', 'goToNextStep'],
             },
             onError: {
               actions: ['setFormDisabledTicketFields', 'setFormErrors'],
@@ -620,7 +627,7 @@ export const SignUpRouterMachine = setup({
               };
             },
             onDone: {
-              actions: 'goToNextStep',
+              actions: ['setResource', 'goToNextStep'],
             },
             onError: {
               actions: ['setFormErrors'],
@@ -641,7 +648,7 @@ export const SignUpRouterMachine = setup({
         },
         NEXT: [
           {
-            guard: 'isStatusComplete',
+            guard: 'isComplete',
             actions: ['setActive', 'delayedReset'],
           },
           {
@@ -680,7 +687,7 @@ export const SignUpRouterMachine = setup({
               fields: context.formRef.getSnapshot().context.fields,
             }),
             onDone: {
-              actions: 'goToNextStep',
+              actions: ['setResource', 'goToNextStep'],
             },
             onError: {
               actions: 'setFormErrors',
@@ -719,7 +726,7 @@ export const SignUpRouterMachine = setup({
         },
         NEXT: [
           {
-            guard: 'isStatusComplete',
+            guard: 'isComplete',
             actions: ['setActive', 'delayedReset'],
           },
           {
@@ -727,23 +734,10 @@ export const SignUpRouterMachine = setup({
             actions: { type: 'navigateInternal', params: { path: '/continue' } },
             target: 'Continue',
           },
-          {
-            description: 'Validate via phone number',
-            guard: 'shouldVerifyPhoneCode',
-            target: '.PhoneCode',
-          },
-          {
-            description: 'Validate via email link',
-            guard: 'shouldVerifyEmailLink',
-            target: '.EmailLink',
-          },
-          {
-            description: 'Verify via email code',
-            guard: 'shouldVerifyEmailCode',
-            target: '.EmailCode',
-          },
+          '.Init',
         ],
       },
+      initial: 'Init',
       states: {
         Init: {
           always: [
@@ -761,9 +755,6 @@ export const SignUpRouterMachine = setup({
               description: 'Verify via email code',
               guard: 'shouldVerifyEmailCode',
               target: 'EmailCode',
-            },
-            {
-              actions: raise({ type: 'NEXT' }),
             },
           ],
         },
@@ -900,6 +891,7 @@ export const SignUpRouterMachine = setup({
                   {
                     guard: 'shouldVerifyEmailCode',
                     target: 'Pending',
+                    actions: 'setResource',
                   },
                   {
                     actions: ['setResource', 'goToNextStep'],
@@ -971,7 +963,7 @@ export const SignUpRouterMachine = setup({
                   },
                 }),
                 onDone: {
-                  actions: 'goToNextStep',
+                  actions: ['setResource', 'goToNextStep'],
                 },
                 onError: {
                   actions: 'setFormErrors',
@@ -1073,7 +1065,7 @@ export const SignUpRouterMachine = setup({
                   },
                 }),
                 onDone: {
-                  actions: 'goToNextStep',
+                  actions: ['setResource', 'goToNextStep'],
                 },
                 onError: {
                   actions: 'setFormErrors',
@@ -1091,7 +1083,7 @@ export const SignUpRouterMachine = setup({
       on: {
         NEXT: [
           {
-            guard: 'isStatusComplete',
+            guard: 'isComplete',
             actions: ['setActive', 'delayedReset'],
           },
           {

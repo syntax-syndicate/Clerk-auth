@@ -12,7 +12,6 @@ export function SignUpRestricted(props: SignUpRestrictedProps) {
   return activeState ? (
     <Form
       // TODO: Update when sign-up flow is consolidated
-      // @ts-expect-error - `flowActor` is not a valid prop for `Form`
       flowActor={routerRef}
       {...props}
     />

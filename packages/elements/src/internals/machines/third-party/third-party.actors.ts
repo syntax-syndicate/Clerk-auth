@@ -9,20 +9,19 @@ import type { AnyActorRef, AnyEventObject } from 'xstate';
 import { fromCallback, fromPromise } from 'xstate';
 
 import { ClerkElementsRuntimeError } from '~/internals/errors';
-import type { WithParams, WithUnsafeMetadata } from '~/internals/machines/shared';
 import { ClerkJSNavigationEvent, isClerkJSNavigationEvent } from '~/internals/machines/utils/clerkjs';
 
 type OptionalRedirectParams = 'redirectUrl' | 'redirectUrlComplete';
 
 export type AuthenticateWithRedirectSignInParams = SetOptional<AuthenticateWithRedirectParams, OptionalRedirectParams>;
 export type AuthenticateWithRedirectSignUpParams = SetOptional<
-  WithUnsafeMetadata<AuthenticateWithRedirectParams>,
+  AuthenticateWithRedirectParams & { unsafeMetadata?: SignUpUnsafeMetadata | undefined },
   OptionalRedirectParams
 >;
 
 export type AuthenticateWithRedirectInput = (
-  | (WithParams<AuthenticateWithRedirectSignInParams> & { flow: 'signIn' })
-  | (WithParams<AuthenticateWithRedirectSignUpParams> & { flow: 'signUp' })
+  | { flow: 'signIn'; params: AuthenticateWithRedirectSignInParams }
+  | { flow: 'signUp'; params: AuthenticateWithRedirectSignUpParams }
 ) & { basePath: string; parent: AnyActorRef }; // TODO: Fix circular dependency
 
 export const redirect = fromPromise<void, AuthenticateWithRedirectInput>(

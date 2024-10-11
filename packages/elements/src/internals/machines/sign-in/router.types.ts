@@ -144,7 +144,7 @@ export interface SignInRouterContext extends BaseRouterContext {
   loading: SignInRouterLoadingContext;
   signUpPath: string;
   webAuthnAutofillSupport: boolean;
-  // resource?: SignInResource;
+  resource?: SignInResource;
 
   // Verifications
   verificationCurrentFactor: SignInFactor | null;

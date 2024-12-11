@@ -12,6 +12,7 @@ import type {
   PreparePhoneNumberVerificationParams,
   PrepareVerificationParams,
   PrepareWeb3WalletVerificationParams,
+  SessionResource,
   SignUpAuthenticateWithWeb3Params,
   SignUpCreateParams,
   SignUpField,
@@ -78,6 +79,10 @@ export class SignUp extends BaseResource implements SignUpResource {
   constructor(data: SignUpJSON | null = null) {
     super();
     this.fromJSON(data);
+  }
+
+  get createdSession(): SessionResource | null {
+    return SignUp.clerk.client?.sessions.find(session => session.id === this.createdSessionId) || null;
   }
 
   create = async (params: SignUpCreateParams): Promise<SignUpResource> => {

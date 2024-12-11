@@ -38,6 +38,7 @@ import type {
   OrganizationProfileProps,
   OrganizationResource,
   OrganizationSwitcherProps,
+  PendingSessionResource,
   PublicKeyCredentialCreationOptionsWithoutExtensions,
   PublicKeyCredentialRequestOptionsWithoutExtensions,
   PublicKeyCredentialWithAuthenticatorAssertionResponse,
@@ -168,7 +169,7 @@ export class Clerk implements ClerkInterface {
   };
 
   public client: ClientResource | undefined;
-  public session: ActiveSessionResource | null | undefined;
+  public session: ActiveSessionResource | PendingSessionResource | null | undefined;
   public organization: OrganizationResource | null | undefined;
   public user: UserResource | null | undefined;
   public __internal_country?: string | null;
@@ -844,7 +845,8 @@ export class Clerk implements ClerkInterface {
         : noop;
 
     if (typeof session === 'string') {
-      session = (this.client.sessions.find(x => x.id === session) as ActiveSessionResource) || null;
+      session =
+        (this.client.sessions.find(x => x.id === session) as ActiveSessionResource | PendingSessionResource) || null;
     }
 
     let newSession = session === undefined ? this.session : session;
@@ -1937,7 +1939,7 @@ export class Clerk implements ClerkInterface {
     return true;
   };
 
-  #defaultSession = (client: ClientResource): ActiveSessionResource | null => {
+  #defaultSession = (client: ClientResource): ActiveSessionResource | PendingSessionResource | null => {
     if (client.lastActiveSessionId) {
       const lastActiveSession = client.activeSessions.find(s => s.id === client.lastActiveSessionId);
       if (lastActiveSession) {
@@ -1972,7 +1974,7 @@ export class Clerk implements ClerkInterface {
   };
 
   // TODO: Be more conservative about touches. Throttle, don't touch when only one user, etc
-  #touchLastActiveSession = async (session?: ActiveSessionResource | null): Promise<void> => {
+  #touchLastActiveSession = async (session?: ActiveSessionResource | PendingSessionResource | null): Promise<void> => {
     if (!session || !this.#options.touchSession) {
       return Promise.resolve();
     }
@@ -2022,7 +2024,7 @@ export class Clerk implements ClerkInterface {
     );
   };
 
-  #setAccessors = (session?: ActiveSessionResource | null) => {
+  #setAccessors = (session?: ActiveSessionResource | PendingSessionResource | null) => {
     this.session = session || null;
     this.organization = this.#getLastActiveOrganizationFromSession();
     this.#aliasUser();

@@ -24,6 +24,7 @@ import type {
   ResetPasswordParams,
   ResetPasswordPhoneCodeFactorConfig,
   SamlConfig,
+  SessionResource,
   SignInCreateParams,
   SignInFirstFactor,
   SignInIdentifier,
@@ -82,6 +83,10 @@ export class SignIn extends BaseResource implements SignInResource {
   constructor(data: SignInJSON | null = null) {
     super();
     this.fromJSON(data);
+  }
+
+  get createdSession(): SessionResource | null {
+    return SignIn.clerk.client?.sessions.find(session => session.id === this.createdSessionId) || null;
   }
 
   create = (params: SignInCreateParams): Promise<this> => {

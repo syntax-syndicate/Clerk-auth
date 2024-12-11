@@ -1,4 +1,11 @@
-import type { ActiveSessionResource, ClientJSON, ClientResource, SignInResource, SignUpResource } from '@clerk/types';
+import type {
+  ActiveSessionResource,
+  ClientJSON,
+  ClientResource,
+  PendingSessionResource,
+  SignInResource,
+  SignUpResource,
+} from '@clerk/types';
 
 import { unixEpochToDate } from '../../utils/date';
 import { SessionTokenCache } from '../tokenCache';
@@ -43,6 +50,10 @@ export class Client extends BaseResource implements ClientResource {
 
   get activeSessions(): ActiveSessionResource[] {
     return this.sessions.filter(s => s.status === 'active') as ActiveSessionResource[];
+  }
+
+  get pendingSessions(): PendingSessionResource[] {
+    return this.sessions.filter(s => s.status === 'pending') as PendingSessionResource[];
   }
 
   create(): Promise<this> {

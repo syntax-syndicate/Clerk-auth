@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@clerk/eslint-config-custom": "workspace:*",
-    "@types/node": "^18.19.33",
     "tsup": "catalog:repo",
     "typescript": "catalog:repo"
   },

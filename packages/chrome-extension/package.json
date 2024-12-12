@@ -55,7 +55,6 @@
   "devDependencies": {
     "@clerk/eslint-config-custom": "workspace:*",
     "@types/chrome": "*",
-    "@types/node": "^18.19.33",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "@types/webextension-polyfill": "^0.10.7",

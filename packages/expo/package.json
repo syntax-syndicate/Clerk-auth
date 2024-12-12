@@ -72,7 +72,6 @@
     "@clerk/eslint-config-custom": "workspace:*",
     "@clerk/expo-passkeys": "workspace:*",
     "@types/base-64": "^1.0.2",
-    "@types/node": "^20.11.24",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
     "expo-auth-session": "^5.4.0",

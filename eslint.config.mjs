@@ -2,35 +2,36 @@ import js from '@eslint/js';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 const ECMA_VERSION = 2021,
   JAVASCRIPT_FILES = ['*.js', '*.jsx', '*.cjs', '*.mjs'],
   TEST_FILES = ['*.test.js', '*.test.jsx', '*.test.ts', '*.test.tsx', 'test/**', '__tests__/**'],
-  TYPESCRIPT_FILES = ['*.ts?(x)', '*.mts'],
+  TYPESCRIPT_FILES = ['*.ts', '*.tsx', '*.mts'],
   YAML_FILES = ['*.yml', '*.yaml'];
 
-export default [
+export default tseslint.config([
   {
     ignores: [
       '.cache',
-      // '.idea',
-      // '.next',
-      // '.turbo',
-      // '.vscode',
-      // '.yalc',
-      // '**/.turbo/*',
-      // '**/build/*',
-      // '**/coverage/*',
-      // '**/dist/*',
-      // '**/integration/templates/**/*',
-      // '**/node_modules/**',
-      // 'commitlint.config.ts',
-      // 'packages/*/dist/**',
-      // 'packages/*/examples',
-      // 'packages/eslint-config-custom/**',
-      // 'playground',
-      // 'pnpm-lock.json',
-      // 'vitest.workspace.mjs',
+      '.idea',
+      '.next',
+      '.turbo',
+      '.vscode',
+      '.yalc',
+      '**/.turbo/*',
+      '**/build/*',
+      '**/coverage/*',
+      '**/dist/*',
+      '**/integration/templates/**/*',
+      '**/node_modules/**',
+      'commitlint.config.ts',
+      'packages/*/dist/**',
+      'packages/*/examples',
+      'packages/eslint-config-custom/**',
+      'playground',
+      'pnpm-lock.json',
+      'vitest.workspace.mjs',
     ],
   },
   {
@@ -44,10 +45,12 @@ export default [
     },
   },
   js.configs.recommended,
+  tseslint.configs.recommended,
   {
     rules: {
       curly: ['error', 'all'],
       'sort-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
@@ -82,4 +85,4 @@ export default [
       'simple-import-sort/imports': 'error',
     },
   },
-];
+]);
